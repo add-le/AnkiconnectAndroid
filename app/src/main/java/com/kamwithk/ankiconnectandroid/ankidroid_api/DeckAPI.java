@@ -49,4 +49,12 @@ public class DeckAPI {
         // Can't find deck
         throw new Exception("Couldn't get deck ID");
     }
+
+    public Long createDeck(String name) {
+        try {
+            return getDeckID(name);
+        } catch (Exception e) {
+            return api.addNewDeck(name);
+        }
+    }
 }

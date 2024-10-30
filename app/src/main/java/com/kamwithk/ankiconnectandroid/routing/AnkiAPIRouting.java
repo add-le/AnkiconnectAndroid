@@ -48,6 +48,8 @@ public class AnkiAPIRouting {
                 return deckNames();
             case "deckNamesAndIds":
                 return deckNamesAndIds();
+            case "createDeck":
+                return createDeck(raw_json);
             case "modelNames":
                 return modelNames();
             case "modelNamesAndIds":
@@ -145,6 +147,10 @@ public class AnkiAPIRouting {
 
     private String deckNamesAndIds() throws Exception {
         return Parser.gson.toJson(deckAPI.deckNamesAndIds());
+    }
+
+    private String createDeck(JsonObject raw_json) {
+        return Parser.gson.toJson(deckAPI.createDeck(Parser.getDeck(raw_json)));
     }
 
     private String modelNames() throws Exception {

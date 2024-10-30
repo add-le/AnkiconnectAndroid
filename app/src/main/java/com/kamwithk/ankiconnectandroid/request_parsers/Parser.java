@@ -40,6 +40,10 @@ public class Parser {
         return raw_data.get("params").getAsJsonObject().get("note").getAsJsonObject().get("deckName").getAsString();
     }
 
+    public static String getDeck(JsonObject raw_data) {
+        return raw_data.get("params").getAsJsonObject().get("deck").getAsString();
+    }
+
     public static String getModelName(JsonObject raw_data) {
         return raw_data.get("params").getAsJsonObject().get("note").getAsJsonObject().get("modelName").getAsString();
     }
