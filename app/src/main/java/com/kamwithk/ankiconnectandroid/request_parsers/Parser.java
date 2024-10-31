@@ -13,7 +13,6 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -34,6 +33,10 @@ public class Parser {
             return data.get("version").getAsInt();
         }
         return fallback;
+    }
+
+    public static String getCardQuery(JsonObject raw_data) {
+        return raw_data.get("params").getAsJsonObject().get("query").getAsString();
     }
 
     public static String getDeckName(JsonObject raw_data) {

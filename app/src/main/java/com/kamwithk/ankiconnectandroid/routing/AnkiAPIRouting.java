@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.kamwithk.ankiconnectandroid.ankidroid_api.BinaryFile;
+import com.kamwithk.ankiconnectandroid.ankidroid_api.CardAPI;
 import com.kamwithk.ankiconnectandroid.ankidroid_api.DeckAPI;
 import com.kamwithk.ankiconnectandroid.ankidroid_api.IntegratedAPI;
 import com.kamwithk.ankiconnectandroid.ankidroid_api.MediaAPI;
@@ -32,18 +33,22 @@ public class AnkiAPIRouting {
     private final DeckAPI deckAPI;
     private final ModelAPI modelAPI;
     private final MediaAPI mediaAPI;
+    private final CardAPI cardAPI;
 
     public AnkiAPIRouting(IntegratedAPI integratedAPI) {
         this.integratedAPI = integratedAPI;
         deckAPI = integratedAPI.deckAPI;
         modelAPI = integratedAPI.modelAPI;
         mediaAPI = integratedAPI.mediaAPI;
+        cardAPI = integratedAPI.cardAPI;
     }
 
     private String findRoute(JsonObject raw_json) throws Exception {
         switch (Parser.get_action(raw_json)) {
             case "version":
                 return version();
+            case "findCards":
+                return findCards(raw_json);
             case "deckNames":
                 return deckNames();
             case "deckNamesAndIds":
@@ -141,6 +146,12 @@ public class AnkiAPIRouting {
         return "AnkiConnect v.6";
     }
 
+    // -- CARD ACTIONS --
+    private String findCards(JsonObject raw_json) {
+        return Parser.gson.toJson(cardAPI.findCards(Parser.getCardQuery(raw_json)));
+    }
+
+    // -- DECK ACTIONS --
     private String deckNames() throws Exception {
         return Parser.gson.toJson(deckAPI.deckNames());
     }

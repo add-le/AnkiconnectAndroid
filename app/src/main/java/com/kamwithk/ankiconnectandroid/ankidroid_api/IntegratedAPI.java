@@ -24,11 +24,12 @@ import com.ichi2.anki.api.AddContentApi;
 import com.kamwithk.ankiconnectandroid.request_parsers.NoteRequest;
 
 public class IntegratedAPI {
-    private Context context;
+    private final Context context;
     public final DeckAPI deckAPI;
     public final ModelAPI modelAPI;
     public final NoteAPI noteAPI;
     public final MediaAPI mediaAPI;
+    public final CardAPI cardAPI;
     private final AddContentApi api; // TODO: Combine all API classes???
 
     //From anki-connect repo
@@ -40,6 +41,7 @@ public class IntegratedAPI {
         modelAPI = new ModelAPI(context);
         noteAPI = new NoteAPI(context);
         mediaAPI = new MediaAPI(context);
+        cardAPI = new CardAPI(context);
 
         api = new AddContentApi(context);
     }
