@@ -1,6 +1,7 @@
 package com.kamwithk.ankiconnectandroid.ankidroid_api;
 
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -31,6 +32,7 @@ public class IntegratedAPI {
     public final MediaAPI mediaAPI;
     public final CardAPI cardAPI;
     private final AddContentApi api; // TODO: Combine all API classes???
+    private final ContentResolver resolver;
 
     //From anki-connect repo
     private static final String CAN_ADD_ERROR_REASON = "cannot create note because it is a duplicate";
@@ -44,6 +46,7 @@ public class IntegratedAPI {
         cardAPI = new CardAPI(context);
 
         api = new AddContentApi(context);
+        resolver = context.getContentResolver();
     }
 
     public static void authenticate(Context context) {
@@ -135,7 +138,7 @@ public class IntegratedAPI {
                 TextUtils.join(",", checksums)
         );
 
-        final Cursor cursor = context.getContentResolver().query(
+        final Cursor cursor = resolver.query(
                 FlashCardsContract.Note.CONTENT_URI_V2,
                 NOTE_PROJECTION,
                 selectionQuery,
@@ -192,7 +195,7 @@ public class IntegratedAPI {
 
         Uri noteUri = Uri.withAppendedPath(FlashCardsContract.Note.CONTENT_URI, Long.toString(noteId));
         Uri cardUri = Uri.withAppendedPath(noteUri, "cards");
-        Cursor cardCursor = context.getContentResolver().query(
+        Cursor cardCursor = resolver.query(
                 cardUri,
                 CARD_PROJECTION,
                 null,
@@ -387,6 +390,79 @@ public class IntegratedAPI {
         // If we want to get the results, calling the findNotes() method will likely cause
         // unwanted delay.
         return new ArrayList<>();
+    }
+
+    public ArrayList<CardAPI.CardInfo> cardsInfo(ArrayList<Long> cardIds) {
+        final ArrayList<CardAPI.CardInfo> cardInfos = new ArrayList<>();
+        final String nidQuery = "cid:" + TextUtils.join(",", cardIds);
+
+        try (final Cursor cursor = resolver.query(FlashCardsContract.TrueCard.CONTENT_URI, null, nidQuery, null, null)) {
+            if(cursor == null) {
+                return cardInfos;
+            }
+
+            while (cursor.moveToNext()) {
+                final Long cardId = cursor.getLong(cursor.getColumnIndexOrThrow(FlashCardsContract.TrueCard._ID));
+                final long noteId = cursor.getLong(cursor.getColumnIndexOrThrow(FlashCardsContract.TrueCard.NID));
+                final long deckId = cursor.getLong(cursor.getColumnIndexOrThrow(FlashCardsContract.TrueCard.DID));
+
+                final Long interval = cursor.getLong(cursor.getColumnIndexOrThrow(FlashCardsContract.TrueCard.IVL));
+                final Long ord = cursor.getLong(cursor.getColumnIndexOrThrow(FlashCardsContract.TrueCard.ORD));
+                final Long type = cursor.getLong(cursor.getColumnIndexOrThrow(FlashCardsContract.TrueCard.TYPE));
+                final Long queue = cursor.getLong(cursor.getColumnIndexOrThrow(FlashCardsContract.TrueCard.QUEUE));
+                final Long due = cursor.getLong(cursor.getColumnIndexOrThrow(FlashCardsContract.TrueCard.DUE));
+                final Long reps = cursor.getLong(cursor.getColumnIndexOrThrow(FlashCardsContract.TrueCard.REPS));
+                final Long lapses = cursor.getLong(cursor.getColumnIndexOrThrow(FlashCardsContract.TrueCard.LAPSES));
+                final Long left = cursor.getLong(cursor.getColumnIndexOrThrow(FlashCardsContract.TrueCard.LEFT));
+                final Long mod = cursor.getLong(cursor.getColumnIndexOrThrow(FlashCardsContract.TrueCard.MOD));
+
+                final String[] fields = noteAPI.getNoteFields(noteId);
+                final Long modelId = noteAPI.getNoteModelId(noteId);
+
+                final ModelAPI.Model model = modelAPI.getModel(modelId);
+                final String css = model.getCSS();
+                final Long fieldOrder = (long)model.getSORT_FIELD_INDEX();
+
+                final String deckName = api.getDeckName(deckId);
+                final String modelName = model.getNAME();
+                String[] modelFields = api.getFieldList(modelId);
+                final ModelAPI.ModelQuestionAnswer modelQuestionAnswer = modelAPI.getModelQuestionAnswer(modelId);
+
+                final String question = modelQuestionAnswer.getQuestion();
+                final String answer = modelQuestionAnswer.getAnswer();
+
+                if(modelFields == null) modelFields = new String[0];
+
+                final Map<String, CardAPI.CardInfoField> cardFields = new HashMap<>();
+                for(int i = 0; i < modelFields.length; i++) {
+                    cardFields.put(modelFields[i], new CardAPI.CardInfoField(fields[i], (long)i));
+                }
+
+                cardInfos.add(new CardAPI.CardInfo(
+                        answer,
+                        question,
+                        deckName,
+                        modelName,
+                        fieldOrder,
+                        cardFields,
+                        css,
+                        cardId,
+                        interval,
+                        noteId,
+                        ord,
+                        type,
+                        queue,
+                        due,
+                        reps,
+                        lapses,
+                        left,
+                        mod
+                ));
+            }
+            return cardInfos;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 

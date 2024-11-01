@@ -53,7 +53,7 @@ public class NoteAPI {
         return api.addNote(model_id, deck_id, fields, tags);
     }
 
-    public String[] getNoteFields(long note_id) throws Exception {
+    public String[] getNoteFields(long note_id) {
         return api.getNote(note_id).getFields();
     }
 

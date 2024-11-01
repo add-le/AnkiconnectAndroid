@@ -49,6 +49,8 @@ public class AnkiAPIRouting {
                 return version();
             case "findCards":
                 return findCards(raw_json);
+            case "cardsInfo":
+                return cardsInfo(raw_json);
             case "deckNames":
                 return deckNames();
             case "deckNamesAndIds":
@@ -149,6 +151,10 @@ public class AnkiAPIRouting {
     // -- CARD ACTIONS --
     private String findCards(JsonObject raw_json) {
         return Parser.gson.toJson(cardAPI.findCards(Parser.getCardQuery(raw_json)));
+    }
+
+    private String cardsInfo(JsonObject raw_json) {
+        return Parser.gson.toJson(integratedAPI.cardsInfo(Parser.getCardIds(raw_json)));
     }
 
     // -- DECK ACTIONS --
